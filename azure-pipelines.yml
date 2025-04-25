@@ -4,9 +4,11 @@ pool: selfhostedpool
 stages:
 - stage: 
   jobs:
-    - job: 
+    - job:
+      displayName: TerraforminitvalidatePlan
       steps:
       - task: TerraformTaskV4@4
+        displayName: Terraform Init
         inputs:
           provider: 'azurerm'
           command: 'init'
@@ -16,11 +18,21 @@ stages:
           backendAzureRmContainerName: 'mycontainer'
           backendAzureRmKey: 'terraform.tfstate'
       - task: TerraformTaskV4@4
+        displayName: Terraform Validate
         inputs:
           provider: 'azurerm'
           command: 'validate'
       - task: TerraformTaskV4@4
+        displayName: Terraform Plan
         inputs:
           provider: 'azurerm'
           command: 'plan'
           environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
+    - job:
+      displayName: WaitForApproval
+      pool: server
+      steps:
+      - task: ManualValidation@1
+        inputs:
+          notifyUsers: 'dheerajkumar4all@gmail.com'
+
