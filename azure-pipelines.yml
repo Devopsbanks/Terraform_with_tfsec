@@ -4,7 +4,7 @@ pool: selfhostedpool
 stages:
 - stage: 
   jobs:
-    - job:
+    - job: TerraformINITPLAN
       displayName: TerraforminitvalidatePlan
       steps:
       - task: TerraformTaskV4@4
@@ -30,6 +30,7 @@ stages:
           environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
     - job:
       displayName: WaitForApproval
+      dependsOn: TerraformINITPLAN
       condition: succeeded()
       pool: server
       steps:
