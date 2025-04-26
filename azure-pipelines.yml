@@ -5,7 +5,7 @@ stages:
 - stage: 
   jobs:
     - job: TerraformINITPLAN
-      displayName: TerraforminitvalidatePlan
+      displayName: Terraform init validate Plan
       steps:
       - task: TerraformTaskV4@4
         displayName: Terraform Init
@@ -28,13 +28,14 @@ stages:
           provider: 'azurerm'
           command: 'plan'
           environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
-    - job:
-      displayName: WaitForApproval
+    - job: ManualValidation
+      displayName: Wait For Approval
       dependsOn: TerraformINITPLAN
-      condition: succeeded()
-      pool: server
+      condition: succeeded ()
+      pool: server # serveless agent
       steps:
       - task: ManualValidation@1
         inputs:
           notifyUsers: 'dheerajkumar4all@gmail.com'
+          
 
