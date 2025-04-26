@@ -31,7 +31,7 @@ stages:
     - job: ManualValidation
       displayName: Wait For Approval
       dependsOn: TerraformINITPLAN
-      condition: succeeded ()
+      condition: failed ()
       pool: server # serveless agent
       steps:
       - task: ManualValidation@1
