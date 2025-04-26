@@ -30,6 +30,7 @@ stages:
           environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
     - job:
       displayName: WaitForApproval
+      condition: succeeded()
       pool: server
       steps:
       - task: ManualValidation@1
