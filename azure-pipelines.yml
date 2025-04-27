@@ -39,6 +39,7 @@ stages:
             curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
             echo "Running tfsec scan..."
             tfsec .
+            tfsec --exclude azure-storage-use-secure-tls-policy
         
       
 
