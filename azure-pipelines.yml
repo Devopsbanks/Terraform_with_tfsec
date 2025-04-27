@@ -4,7 +4,7 @@ pool: selfhostedpool
 stages:
 - stage: 
   jobs:
-    - job: TerraformINITPLAN
+    - job: Terraform_Init_Validate_Plan
       displayName: Terraform init validate Plan
       steps:
       - task: TerraformTaskV4@4
@@ -28,10 +28,25 @@ stages:
           provider: 'azurerm'
           command: 'plan'
           environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
-    - job: ManualValidation
+    - job:  tfsec_Security_Scanning
+      displayName:  Security_Scanning
+      dependsOn: Terraform_Init_Validate_Plan
+      steps:
+      - task: CmdLine@2
+        inputs:
+          script: |
+            echo "Installing tfsec..."
+            curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+            echo "Running tfsec scan..."
+            tfsec .
+        
+      
+
+      
+    - job: Manual_Validation
       displayName: Wait For Approval
-      dependsOn: TerraformINITPLAN
-      condition: succeededOrFailed ()
+      dependsOn: Terraform_Init_Validate_Plan
+      condition: succeeded()
       pool: server # serveless agent
       steps:
       - task: ManualValidation@1
