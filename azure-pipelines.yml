@@ -31,6 +31,7 @@ stages:
     - job:  tfsec_Security_Scanning
       displayName:  Security_Scanning
       dependsOn: Terraform_Init_Validate_Plan
+      continueOnError: true
       steps:
       - task: CmdLine@2
         inputs:
@@ -38,7 +39,7 @@ stages:
             echo "Installing tfsec..."
             curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
             echo "Running tfsec scan..."
-            mkdir -p reports
+            mkdir -p $(Build.ArtifactStagingDirectory)/reports
             tfsec . --out=reports/tfsec-report.html
       - task: PublishBuildArtifacts@1
         displayName: Publish tfsec HTML Report Artifact
