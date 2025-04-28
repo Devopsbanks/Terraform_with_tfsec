@@ -38,9 +38,16 @@ stages:
             echo "Installing tfsec..."
             curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
             echo "Running tfsec scan..."
-            tfsec .
-            tfsec --exclude azure-storage-use-secure-tls-policy
+            mkdir -p reports
+            tfsec . --out=reports/tfsec-report.html
+      - task: PublishBuildArtifacts@1
+        displayName: Publish tfsec HTML Report Artifact
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/reports'
+          ArtifactName: 'tfsec-Report'
+          publishLocation: 'Container'
         
+  
       
 
       
