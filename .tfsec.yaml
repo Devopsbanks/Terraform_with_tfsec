@@ -1,0 +1,9 @@
+exclude:
+  - azure-storage-use-secure-tls-policy
+  - aws-s3-enable-bucket-logging
+
+soft_fail: false
+
+minimum_severity: MEDIUM
+
+output_format: html
