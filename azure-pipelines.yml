@@ -1,73 +1,74 @@
 trigger: none
 
 pool: selfhostedpool
+
 stages:
-- stage: 
-  jobs:
-    - job: Terraform_Init_Validate_Plan
-      displayName: Terraform init validate Plan
-      steps:
-      - task: TerraformTaskV4@4
-        displayName: Terraform Init
-        inputs:
-          provider: 'azurerm'
-          command: 'init'
-          backendServiceArm: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
-          backendAzureRmResourceGroupName: 'infra-rg'
-          backendAzureRmStorageAccountName: 'mystorageaccount199546'
-          backendAzureRmContainerName: 'mycontainer'
-          backendAzureRmKey: 'terraform.tfstate'
-      - task: TerraformTaskV4@4
-        displayName: Terraform Validate
-        inputs:
-          provider: 'azurerm'
-          command: 'validate'
-      - task: TerraformTaskV4@4
-        displayName: Terraform Plan
-        inputs:
-          provider: 'azurerm'
-          command: 'plan'
-          environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
-    - job: tfsec_Security_Scanning
-      displayName: Security_Scanning
-      dependsOn: Terraform_Init_Validate_Plan
-      continueOnError: true
-      steps:
-      - task: CmdLine@2
-        displayName: 'Install and Run tfsec'
-        inputs:
-         script: |
-          echo "Installing tfsec..."
-          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
-          
-          echo "Preparing report folder..."
-          mkdir -p $(Build.ArtifactStagingDirectory)/reports
-          
-          echo "Running tfsec scan..."
-          tfsec . --out=$(Build.ArtifactStagingDirectory)/reports/tfsec-report.html
-          
-          # Check if the report exists and is not empty
-          if [ ! -s $(Build.ArtifactStagingDirectory)/reports/tfsec-report.html ]; then
-            echo "Error: tfsec report is empty or not generated!"
-            exit 1
-          fi
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish tfsec HTML Report Artifact'
-        inputs:
-         PathtoPublish: '$(Build.ArtifactStagingDirectory)/reports'
-         ArtifactName: 'tfsec-Report'
-         publishLocation: 'Container'
+  - stage: 
+    jobs:
+      - job: Terraform_Init_Validate_Plan
+        displayName: Terraform init validate Plan
+        steps:
+          - task: TerraformTaskV4@4
+            displayName: Terraform Init
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
+              backendAzureRmResourceGroupName: 'infra-rg'
+              backendAzureRmStorageAccountName: 'mystorageaccount199546'
+              backendAzureRmContainerName: 'mycontainer'
+              backendAzureRmKey: 'terraform.tfstate'
+          - task: TerraformTaskV4@4
+            displayName: Terraform Validate
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+          - task: TerraformTaskV4@4
+            displayName: Terraform Plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              environmentServiceNameAzureRM: 'Azure subscription 1(9117002a-2308-428d-993b-9f46dfdfd10c)'
+      - job: tfsec_Security_Scanning
+        displayName: Security_Scanning
+        dependsOn: Terraform_Init_Validate_Plan
+        continueOnError: false  # Set to false if you want the pipeline to fail on tfsec error
+        steps:
+          - task: CmdLine@2
+            displayName: 'Install and Run tfsec'
+            inputs:
+              script: |
+                echo "Installing tfsec..."
+                curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+                
+                echo "Preparing report folder..."
+                mkdir -p $(Build.ArtifactStagingDirectory)/reports
+                
+                echo "Running tfsec scan..."
+                tfsec . --out=$(Build.ArtifactStagingDirectory)/reports/tfsec-report.html
+                
+                # Check if the report exists and is not empty
+                if [ ! -s $(Build.ArtifactStagingDirectory)/reports/tfsec-report.html ]; then
+                  echo "Error: tfsec report is empty or not generated!"
+                  exit 1
+                fi
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish tfsec HTML Report Artifact'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/reports'
+              ArtifactName: 'tfsec-Report'
+              publishLocation: 'Container'
 
 
       
-    - job: Manual_Validation
-      displayName: Wait For Approval
-      dependsOn: Terraform_Init_Validate_Plan
-      condition: succeeded()
-      pool: server # serveless agent
-      steps:
-      - task: ManualValidation@1
-        inputs:
-          notifyUsers: 'dheerajkumar4all@gmail.com'
+      - job: Manual_Validation
+        displayName: Wait For Approval
+        dependsOn: tfsec_Security_Scanning
+        condition: succeeded()
+        pool: server # serveless agent
+        steps:
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: 'dheerajkumar4all@gmail.com'
           
 
