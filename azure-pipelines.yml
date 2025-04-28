@@ -40,7 +40,7 @@ stages:
             curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
             echo "Running tfsec scan..."
             mkdir -p $(Build.ArtifactStagingDirectory)/reports
-            tfsec . --out=reports/tfsec-report.html
+            tfsec . --out=$(Build.ArtifactStagingDirectory)/reports/tfsec-report.html
       - task: PublishBuildArtifacts@1
         displayName: Publish tfsec HTML Report Artifact
         inputs:
