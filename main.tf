@@ -19,7 +19,7 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = "xxxxxxxxx"
+  subscription_id = "your_azure_subscription_id"
 }
 
 resource "azurerm_resource_group" "Rg_block" {
